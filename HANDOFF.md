@@ -68,3 +68,18 @@ docker build --platform linux/amd64 -t gbt-check:stable .
 ```
 
 镜像 v1.0.1（commit 38d6045+fix）：含 fla 自愈预检，代码/权重全挂载。
+
+## 六、4B 的 adapter 传输约定（2026-11-25 补）
+
+4B 的 QLoRA adapter 直接挂 bf16 底座会有微小概率漂移（两遍卡检索对候选敏感，
+saima46 上 89.1 vs 合并版 91.3）。因此：
+
+- **传输格式 = adapter（137MB）**：明天发 4b-v3-adapter 目录
+- **部署格式 = 合并版**：接收方跑一条命令本地合并（约 10 分钟，CPU 即可）：
+  ```bash
+  python3 merge_4b.py --base /models/Qwen3-4B --adapter /models/4b-v3-adapter \
+      --out /models/4b-finetune-v3
+  ```
+- 合并后 MODEL_4B=/models/4b-finetune-v3（不挂 ADAPTER_4B）
+- U 盘已备：models/Qwen3-4B（底座，7.6G，永不更新）+ models/4b-v2-adapter（当前版）
+- 27B 无此问题（LoRA 本来就是 bf16 训的，adapter 直接挂载即等价）
