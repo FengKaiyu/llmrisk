@@ -52,3 +52,19 @@ docker run --gpus all --rm \
 
 - F5 仲裁（双引擎类分歧）现归 E1：v3mix 上 E2 胜可 +2.5，但官方风格反向——需新 E1 出炉后三集联测定夺
 - A5 专线在无 A.5 gold 的集子上误触发 1 次（v3b-45）：拟加档位置信阈值；若 27B-v2v3 自解 A.5 则砍掉
+
+## 五、镜像获取（三选一）
+
+```bash
+# A) U 盘自带（离线现场推荐）
+gunzip -c gbt-check_v1.0.1.tar.gz | docker load
+
+# B) GHCR 拉取（有网环境）
+docker pull ghcr.io/fengkaiyu/llmrisk/gbt-check:stable
+
+# C) 源码构建（GitHub 仓库打 v* tag 自动触发 Actions）
+git clone git@github.com:FengKaiyu/llmrisk.git && cd llmrisk
+docker build --platform linux/amd64 -t gbt-check:stable .
+```
+
+镜像 v1.0.1（commit 38d6045+fix）：含 fla 自愈预检，代码/权重全挂载。
