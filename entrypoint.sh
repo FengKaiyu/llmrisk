@@ -6,6 +6,7 @@ python3 /app/preflight.py || true
 # ===== 代码目录：挂载 /code 优先，镜像内置 /app 兜底 =====
 APP_DIR=/app
 [ -f /code/pipeline.py ] && APP_DIR=/code
+echo "[entrypoint] 使用代码目录: $APP_DIR"
 
 # ===== 模型路径（全部挂载进容器，不进镜像） =====
 ARGS=()

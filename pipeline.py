@@ -116,9 +116,9 @@ def main():
     ap.add_argument("--data", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--mode", default="auto", choices=["auto", "dual", "e1", "e2"])
-    ap.add_argument("--e1-base", default="/models/qwen3.8-27b-bf16")
-    ap.add_argument("--e1-adapter", default="/models/gbt31_27b/adapter")
-    ap.add_argument("--e2-base", default="/models/4b-finetune")
+    ap.add_argument("--e1-base", default=None)
+    ap.add_argument("--e1-adapter", default=None)
+    ap.add_argument("--e2-base", default=None)
     ap.add_argument("--e2-adapter", default=None)
     ap.add_argument("--kb-dir", default=str(R / "kb"))
     ap.add_argument("--budget", type=int, default=4800)
@@ -128,8 +128,16 @@ def main():
     ap.add_argument("--base-bs", type=int, default=6)
     args = ap.parse_args()
 
+    for eng, base, adp in [("E1", args.e1_base, args.e1_adapter),
+                           ("E2", args.e2_base, args.e2_adapter)]:
+        if adp and not os.path.isdir(adp):
+            raise SystemExit(f"[fatal] {eng} adapter 路径不存在：{adp}（拒绝静默降级跑裸底座，请检查挂载）")
     have_e1 = args.e1_base and os.path.isdir(args.e1_base)
     have_e2 = args.e2_base and os.path.isdir(args.e2_base)
+    if args.mode in ("dual", "e1") and not have_e1:
+        raise SystemExit(f"[fatal] 模式 {args.mode} 需要 E1 底座，当前路径不存在：{args.e1_base}")
+    if args.mode in ("dual", "e2") and not have_e2:
+        raise SystemExit(f"[fatal] 模式 {args.mode} 需要 E2 底座，当前路径不存在：{args.e2_base}")
     mode = args.mode
     if mode == "auto":
         mode = "dual" if (have_e1 and have_e2) else ("e1" if have_e1 else "e2")
@@ -141,8 +149,7 @@ def main():
     tok1 = e1 = None
     if mode in ("dual", "e1"):
         try:
-            tok1, e1 = load_engine(args.e1_base, args.e1_adapter if
-                                   args.e1_adapter and os.path.isdir(args.e1_adapter) else None)
+            tok1, e1 = load_engine(args.e1_base, args.e1_adapter)
         except Exception as ex:
             print(f"[degrade] E1 加载失败：{ex}", flush=True)
             if mode == "dual":

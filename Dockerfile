@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends gcc \
     && rm -rf /var/lib/apt/lists/*
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY pipeline.py kb_retriever.py preflight.py entrypoint.sh ./
+COPY pipeline.py kb_retriever.py preflight.py merge_4b.py entrypoint.sh ./
 COPY kb/ kb/
 COPY gbt45654_taxonomy.json gbt45654_判定规则知识库.md ./
 RUN chmod +x entrypoint.sh
