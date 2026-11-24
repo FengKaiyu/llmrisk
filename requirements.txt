@@ -1,0 +1,5 @@
+transformers==5.24.0
+peft==0.22.0
+accelerate
+fla-core==0.6.0
+flash-linear-attention==0.6.0
