@@ -80,7 +80,7 @@ def run_letter(tok, model, prompts, keys, bs_budget=36000, base_bs=6, max_len=81
             batch_idx.append(order[i]); toks.append(len(prompts[order[i]])); i += 1
         enc = tok([prompts[j] for j in batch_idx], return_tensors="pt", padding=True,
                   add_special_tokens=False, truncation=True, max_length=max_len).to("cuda:0")
-        logits = model(**enc, num_logits_to_keep=1).logits
+        logits = model(**enc, logits_to_keep=1).logits
         last = logits[:, -1, :].float()
         sel = last.index_select(1, torch.as_tensor(ids, device=last.device))
         for bi, j in enumerate(batch_idx):

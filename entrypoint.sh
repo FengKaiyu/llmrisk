@@ -15,12 +15,12 @@ ARGS=()
 [ -n "$MODEL_4B" ]     && ARGS+=(--e2-base "$MODEL_4B")
 [ -n "$ADAPTER_4B" ]   && ARGS+=(--e2-adapter "$ADAPTER_4B")
 
-# ===== 数据路径：CLI 参数 > 环境变量 > 默认 =====
-if [ "$#" -eq 0 ]; then
-  exec python3 "$APP_DIR/pipeline.py" \
-    --data "${INPUT_FILE:-/data/input.jsonl}" \
-    --out "${OUTPUT_FILE:-/data/output.jsonl}" \
-    "${ARGS[@]}"
-else
-  exec python3 "$APP_DIR/pipeline.py" "$@" "${ARGS[@]}"
-fi
+# ===== 数据路径：CLI 显式参数优先，缺的用环境变量/默认值补齐 =====
+has_data=0; has_out=0
+for a in "$@"; do
+  case "$a" in --data) has_data=1;; --out) has_out=1;; esac
+done
+EXTRA=()
+[ "$has_data" -eq 0 ] && EXTRA+=(--data "${INPUT_FILE:-/data/input.jsonl}")
+[ "$has_out" -eq 0 ] && EXTRA+=(--out "${OUTPUT_FILE:-/data/output.jsonl}")
+exec python3 "$APP_DIR/pipeline.py" "$@" "${EXTRA[@]}" "${ARGS[@]}"
